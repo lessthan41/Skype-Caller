@@ -1,7 +1,9 @@
 ﻿# Skype-Caller
  
 ## Usage:
-* Floating Wigit Service
+* Floating Wigit Service (registered service with BroadcastReceiver listen broadcast from Notification Service)
+* Notification Service (registered service with Broadcast while receiving notification from Skype)
 * Broadcast Receiver
+* Notification Capture
 * Permission Asking
-* Redirect Application
+* Application Redirect
