@@ -7,3 +7,6 @@
 * Notification Capture
 * Permission Asking
 * Application Redirect
+
+## Target Device:
+* Android 7.1.1
