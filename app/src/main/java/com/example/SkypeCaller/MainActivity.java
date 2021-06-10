@@ -86,8 +86,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
 
 //            open Biometrics application
-//            Intent launchIntent = getPackageManager().getLaunchIntentForPackage("com.ceco.face");
-            Intent launchIntent = getPackageManager().getLaunchIntentForPackage("com.android.chrome"); // Test
+            Intent launchIntent = getPackageManager().getLaunchIntentForPackage("com.ceco.face");
+//            Intent launchIntent = getPackageManager().getLaunchIntentForPackage("com.android.chrome"); // Test
             launchIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             launchIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivity(launchIntent);
