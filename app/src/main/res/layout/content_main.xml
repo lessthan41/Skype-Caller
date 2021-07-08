@@ -4,13 +4,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:showIn="@layout/app_bar_main">
 
     <ImageView
         android:id="@+id/imageView2"
-        android:layout_width="384dp"
-        android:layout_height="113dp"
+        android:layout_width="485dp"
+        android:layout_height="165dp"
         android:layout_marginTop="250dp"
         android:layout_marginBottom="312dp"
         android:contentDescription="@string/izone"
@@ -20,4 +21,5 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/izone_rmbg" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

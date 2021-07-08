@@ -1,19 +1,28 @@
 package com.example.SkypeCaller;
 
+import android.app.ActivityManager;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.graphics.PixelFormat;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.IBinder;
 import android.provider.Settings;
+import android.util.DisplayMetrics;
+import android.util.Log;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewTreeObserver;
+import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -23,19 +32,20 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
 public class WidgetService extends Service {
-
-    String skypeId = "echo123?call";
+    private static final int REDIRECT_SECOND = 15;
+    private static String SKYPE_ID = "live:.cid.8847eccecc234b96?call"; // wayne
+//    private static String SKYPE_ID = "echo123?call";
 
     private ReceiveBroadcastReceiver imageChangeBroadcastReceiver;
     MultiTask multiTask;
 
-    int LAYOUT_FLAG;
     View mFloatingView;
+    WindowManager.LayoutParams layoutParams;
     WindowManager windowManager;
-    ImageView imageClose;
     ImageButton button;
 
-    float height, width;
+    int LAYOUT_FLAG;
+    private boolean inProcess = false;
 
     @Nullable
     @Override
@@ -55,25 +65,27 @@ public class WidgetService extends Service {
 
         // inflate layout
         mFloatingView = LayoutInflater.from(this).inflate(R.layout.working, null);
-        WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams(
+        layoutParams = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 LAYOUT_FLAG,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+//                WindowManager.LayoutParams.,
                 PixelFormat.TRANSLUCENT
         );
 
-        // initial position
+//        initial position
         layoutParams.gravity = Gravity.BOTTOM | Gravity.RIGHT;
         layoutParams.x = 0;
         layoutParams.y = 0;
+//        layoutParams.softInputMode = WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE;
 
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         windowManager.addView(mFloatingView, layoutParams);
         mFloatingView.setVisibility(View.VISIBLE);
 
-        // button onclick event
-        button = (ImageButton) mFloatingView.findViewById(R.id.button3);
+//        button onclick event
+        button = mFloatingView.findViewById(R.id.button3);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -91,24 +103,54 @@ public class WidgetService extends Service {
     }
 
     private void callSkype(View view) {
+        if (!inProcess) {
+//            skype uri
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("skype:" + SKYPE_ID));
+            startActivity(browserIntent);
 
-        // skype uri
-        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("skype:" + skypeId));
-        startActivity(browserIntent);
-        multiTask = new MultiTask();
-        multiTask.execute();
+//            count down
+            multiTask = new MultiTask();
+            multiTask.execute();
 
-        Toast.makeText(this, "Skype Call", Toast.LENGTH_SHORT).show();    // Show Message
+            Toast.makeText(this, "Skype Call", Toast.LENGTH_SHORT).show();    // Show Message
+        }
     }
 
-    class MultiTask extends AsyncTask<Void, Void, Void> {
+     public void switchButton(int i) {
+//         button.setImageResource(R.drawable.num1);
+        switch (i) {
+            case 5:
+                button.setImageResource(R.drawable.num5);
+                break;
+            case 4:
+                button.setImageResource(R.drawable.num4);
+                break;
+            case 3:
+                button.setImageResource(R.drawable.num3);
+                break;
+            case 2:
+                button.setImageResource(R.drawable.num2);
+                break;
+            case 1:
+                button.setImageResource(R.drawable.num1);
+                break;
+            default:
+                break;
+        }
+    }
+
+    class MultiTask extends AsyncTask<Void, Integer, Void> {
         @Override
         protected Void doInBackground(Void... voids) {
-
+            inProcess = true;
             try {
-                int sec = 9;
-                for (int i = 0; i < sec; i++) {
+                for (int i = REDIRECT_SECOND; i > 0; i--) {
+                    if (i <= 5) {
+                        publishProgress(i);
+                    }
                     Thread.sleep(1000);
+                    if (isCancelled())
+                        break;
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -117,17 +159,34 @@ public class WidgetService extends Service {
             return null;
         }
 
+        protected void onProgressUpdate(Integer... progress) {
+            switchButton(progress[0]);
+        }
+
         @Override
         protected void onPostExecute(Void unused) {
             super.onPostExecute(unused);
+            inProcess = false;
 
 //            reopen application
             Intent reopenIntent = new Intent(WidgetService.this, MainActivity.class);
-            reopenIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(reopenIntent);
+
+            try {
+                reopenIntent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
+                startActivity(reopenIntent);
+            } catch (Exception e) {
+                reopenIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(reopenIntent);
+                e.printStackTrace();
+            }
+        }
+
+        @Override
+        protected void onCancelled() {
+            super.onCancelled();
+            inProcess = false;
         }
     }
-
 
     /**
      * Receive Broadcast Receiver.
@@ -135,27 +194,11 @@ public class WidgetService extends Service {
     public class ReceiveBroadcastReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-
-//            int receivedNotificationCode = intent.getIntExtra("Notification Code",-1);
-//            String packages = intent.getStringExtra("package");
-//            String title = intent.getStringExtra("title");
-//            String text = intent.getStringExtra("text");
-
-//            stop multitask counting down
+//                stop multitask counting down
             multiTask.cancel(true);
-
-//            if(text != null) {
-////                String android_id = Settings.Secure.getString(getApplicationContext().getContentResolver(),
-////                        Settings.Secure.ANDROID_ID);
-////                String devicemodel = android.os.Build.MANUFACTURER+android.os.Build.MODEL+android.os.Build.BRAND+android.os.Build.SERIAL;
-////
-////                DateFormat df = new SimpleDateFormat("ddMMyyyyHHmmssSSS");
-////                String date = df.format(Calendar.getInstance().getTime());
-////
-////                tvMsg.setText("Notification : " + receivedNotificationCode + "\nPackages : " + packages + "\nTitle : " + title + "\nText : " + text + "\nId : " + date+ "\nandroid_id : " + android_id+ "\ndevicemodel : " + devicemodel);
-//            }
         }
     }
+
 
 
     @Override
@@ -164,10 +207,6 @@ public class WidgetService extends Service {
         unregisterReceiver(imageChangeBroadcastReceiver);
         if (mFloatingView != null) {
             windowManager.removeView(mFloatingView);
-        }
-
-        if (imageClose != null) {
-            windowManager.removeView(imageClose);
         }
     }
 }

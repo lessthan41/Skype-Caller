@@ -22,24 +22,16 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
-
 @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
 public class SkypeAccessibilityService extends NotificationListenerService {
-    /*
-     These are the package names of the apps. for which we want to
-     listen the notifications
-  */
+
     private static final class ApplicationPackageNames {
         public static final String SKYPE_PACK_NAME = "com.skype.raider";
     }
 
-    /*
-        These are the return codes we use in the method which intercepts
-        the notifications, to decide whether we should do something or not
-     */
     public static final class InterceptedNotificationCode {
         public static final int SKYPE_CODE = 1;
-        public static final int OTHER_NOTIFICATIONS_CODE = 2; // We ignore all notification with code == 4
+        public static final int OTHER_NOTIFICATIONS_CODE = 2; // We ignore all notification with code == 2
     }
 
     @Override
@@ -89,7 +81,7 @@ public class SkypeAccessibilityService extends NotificationListenerService {
                 sendBroadcast(intent);
 //                /* End */
 
-                /* Used Used for SendBroadcast */
+                /* Used for Toast */
                 if(text != null) {
                     String android_id = Settings.Secure.getString(getApplicationContext().getContentResolver(),
                             Settings.Secure.ANDROID_ID);

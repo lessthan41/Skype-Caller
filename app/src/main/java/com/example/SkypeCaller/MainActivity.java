@@ -1,5 +1,6 @@
 package com.example.SkypeCaller;
 
+import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -7,6 +8,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -34,11 +37,12 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+    private static final String REDIRECT_APPLICATION = "com.ceco.face";
+//    private static final String REDIRECT_APPLICATION = "com.android.chrome"; // Test
     private static final String ENABLED_NOTIFICATION_LISTENERS = "enabled_notification_listeners";
     private static final String ACTION_NOTIFICATION_LISTENER_SETTINGS = "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS";
     private static final String ACTION_FLOATING_WINDOW_SETTINGS = Settings.ACTION_MANAGE_OVERLAY_PERMISSION;
 
-    private TextView tvMsg;
     private AlertDialog alertDialog;
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -49,8 +53,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         androidx.appcompat.widget.Toolbar toolbar = (androidx.appcompat.widget.Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-//        tvMsg = (TextView) this.findViewById(R.id.image_change_explanation);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -86,8 +88,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
 
 //            open Biometrics application
-            Intent launchIntent = getPackageManager().getLaunchIntentForPackage("com.ceco.face");
-//            Intent launchIntent = getPackageManager().getLaunchIntentForPackage("com.android.chrome"); // Test
+            Intent launchIntent = getPackageManager().getLaunchIntentForPackage(REDIRECT_APPLICATION);
             launchIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             launchIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivity(launchIntent);
@@ -96,6 +97,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onResume() {
         super.onResume();
